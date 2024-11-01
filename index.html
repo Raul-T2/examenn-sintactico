@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizador de CURP</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1, h2 { color: #0056b3; }
+        form { text-align: center; margin-bottom: 20px; }
+        table { width: 80%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #0056b3; padding: 10px; text-align: left; }
+        th { background-color: #cce5ff; text-align: center; }
+        #tablaTokens, #tablaSintactico, #tituloLexico, #tituloSintactico { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Analizador de CURP</h1>
+    <form id="curpForm">
+        <label for="curp">Ingrese CURP:</label>
+        <input type="text" id="curp" name="curp" maxlength="18" required>
+        <button type="submit">Analizar</button>
+    </form>
+
+    <h2 id="tituloLexico">Resultado Léxico</h2>
+    <table id="tablaTokens">
+        <thead>
+            <tr>
+                <th>Token</th>
+                <th>Descripción</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h2 id="tituloSintactico">Resultado Sintáctico</h2>
+    <p id="mensajeSintactico"></p>
+    <table id="tablaSintactico">
+        <tr><td>Total de Números:</td><td id="totalNumeros"></td></tr>
+        <tr><td>Total de Letras:</td><td id="totalLetras"></td></tr>
+    </table>
+
+    <script>
+        document.getElementById('curpForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const curp = document.getElementById('curp').value;
+
+            const response = await fetch('/analizar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ curp })
+            });
+
+            const data = await response.json();
+
+            // Mostrar títulos y tabla de tokens
+            document.getElementById('tituloLexico').style.display = 'block';
+            const tablaTokens = document.getElementById('tablaTokens');
+            const tbody = tablaTokens.querySelector('tbody');
+            tbody.innerHTML = '';
+            data.tokens.forEach((token, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${token}</td><td>${data.descripcion[index]}</td>`;
+                tbody.appendChild(row);
+            });
+            tablaTokens.style.display = 'table';
+
+            // Mostrar título y tabla de resultados sintácticos
+            document.getElementById('tituloSintactico').style.display = 'block';
+            document.getElementById('mensajeSintactico').textContent = data.mensaje;
+            document.getElementById('totalNumeros').textContent = data.total_numeros;
+            document.getElementById('totalLetras').textContent = data.total_letras;
+            document.getElementById('tablaSintactico').style.display = 'table';
+        });
+    </script>
+</body>
+</html>
+
